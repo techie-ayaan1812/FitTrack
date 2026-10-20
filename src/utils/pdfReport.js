@@ -33,4 +33,7 @@ export async function buildReport(S,save=true){
  table('Steps by day',['Date','Steps'],stDays.map(x=>[x.d,x.n.toLocaleString()]),{columnStyles:{1:{halign:'right'}}})
  table('Sleep and naps',['Date','Type','Time','Duration','Quality'],[...S.s].sort(byDesc).map(s=>[s.d,s.nap?'Nap':'Sleep',s.b+' – '+s.e,hm(sdur(s)),s.q+'/5'])) 
  const n=doc.getNumberOfPages();for(let i=1;i<=n;i++){doc.setPage(i);doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(...GREY);doc.text('Calories and recovery are estimates, not measurements. Data is stored only in your browser.',40,H-24);doc.text(`Page ${i} of ${n}`,W-40,H-24,{align:'right'})}
- if(save)doc.save(`FitTrack-Report-${today}.pdf`);return doc}
+ if(save){ // unique name + fresh blob URL every time, so phones never treat it as "already downloaded"
+  const stamp=now.toTimeString().slice(0,8).replace(/:/g,''),url=URL.createObjectURL(doc.output('blob')),el=document.createElement('a')
+  el.href=url;el.download=`FitTrack-Report-${today}-${stamp}.pdf`;document.body.appendChild(el);el.click();el.remove();setTimeout(()=>URL.revokeObjectURL(url),60000)}
+ return doc}
